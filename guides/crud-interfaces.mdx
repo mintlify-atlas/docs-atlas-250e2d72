@@ -1,0 +1,279 @@
+---
+title: Building CRUD Interfaces
+description: Build fully functional Create, Read, Update, and Delete screens using UDA's maintenance form pattern, generated Spring MVC controllers, and RUP table components.
+---
+
+UDA's **maintenance form pattern** (Patrón de Mantenimiento con Formulario) is the primary way to build data-management screens. It combines a server-side Spring MVC controller with a client-side `rup_table` widget to deliver paginated search, inline or modal editing, and multi-row deletion out of the box.
+
+## From Wizard to Working CRUD
+
+<Steps>
+  <Step title="Run the New UDA Maintenance wizard">
+    In Eclipse, go to **File > New > Other > UDA > New UDA Maintenance**. Select your JPA entity, pick the fields to expose, and choose a pattern type (form, inline, or master-detail). See [Code Generation](/guides/code-generation) for full wizard details.
+  </Step>
+  <Step title="Review generated artefacts">
+    The wizard writes a controller, service interface and implementation, DAO interface and implementation, a DTO, two JSP views, and a JavaScript init file. Verify the package structure matches your project conventions before proceeding.
+  </Step>
+  <Step title="Configure the datasource">
+    Ensure `persistence.xml` points to the correct datasource and that the entity is listed under `<class>`. See [Configuration](/guides/configuration) for datasource setup.
+  </Step>
+  <Step title="Deploy and test">
+    Start the application server from Eclipse or run `mvn package` and deploy the EAR. Navigate to `/context/entity` to verify the list view loads and CRUD actions work end-to-end.
+  </Step>
+</Steps>
+
+---
+
+## Generated Controller Endpoints
+
+The generated controller for an entity (e.g. `Usuario`) exposes the following URL mappings:
+
+| Method | URL | Purpose |
+|---|---|---|
+| `GET` | `/usuario` | Return the list/search JSP view |
+| `GET` | `/usuario/search` | Return paginated JSON for the RUP table (DataTables protocol) |
+| `GET` | `/usuario/{id}` | Return a single record as JSON |
+| `POST` | `/usuario/add` | Create a new record |
+| `PUT` | `/usuario/update` | Update an existing record |
+| `DELETE` | `/usuario/delete` | Delete one or more records |
+
+A condensed view of the generated controller:
+
+```java
+@Controller
+@RequestMapping("/usuario")
+public class UsuarioController extends BaseController {
+
+    @Autowired
+    private UsuarioService usuarioService;
+
+    /** Render list view */
+    @RequestMapping(method = RequestMethod.GET)
+    public String index(Model model) {
+        return "usuario/usuario";
+    }
+
+    /** DataTables search endpoint */
+    @RequestMapping(value = "/search", method = RequestMethod.GET)
+    @ResponseBody
+    public DataTablesOutput<UsuarioDto> search(
+            @Valid DataTablesInput input,
+            BindingResult bindingResult) {
+        return usuarioService.findAll(input);
+    }
+
+    /** Get single record */
+    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @ResponseBody
+    public UsuarioDto get(@PathVariable Long id) {
+        return usuarioService.findById(id);
+    }
+
+    /** Create */
+    @RequestMapping(value = "/add", method = RequestMethod.POST)
+    @ResponseBody
+    public UsuarioDto add(@Valid @RequestBody UsuarioDto dto,
+                          BindingResult bindingResult) {
+        return usuarioService.save(dto);
+    }
+
+    /** Update */
+    @RequestMapping(value = "/update", method = RequestMethod.PUT)
+    @ResponseBody
+    public UsuarioDto update(@Valid @RequestBody UsuarioDto dto,
+                             BindingResult bindingResult) {
+        return usuarioService.update(dto);
+    }
+
+    /** Delete */
+    @RequestMapping(value = "/delete", method = RequestMethod.DELETE)
+    @ResponseBody
+    public void delete(@RequestParam List<Long> ids) {
+        usuarioService.deleteAll(ids);
+    }
+}
+```
+
+---
+
+## DataTablesInput / DataTablesOutput Pattern
+
+The `/search` endpoint speaks the DataTables server-side processing protocol. Spring Data's `DataTablesInput` object carries pagination state, sort column, sort direction, and per-column search terms. The service layer converts this into a JPA query and returns a `DataTablesOutput` wrapper.
+
+```java
+@RequestMapping(value = "/search", method = RequestMethod.GET)
+@ResponseBody
+public DataTablesOutput<UsuarioDto> search(
+        @Valid DataTablesInput input,
+        BindingResult bindingResult) {
+    return usuarioService.findAll(input);
+}
+```
+
+<Info>
+  `DataTablesInput` is provided by the `datatables-core` Spring Data integration bundled with UDA. It automatically maps the `draw`, `start`, `length`, `order`, `columns`, and `search` query parameters sent by `rup_table`.
+</Info>
+
+---
+
+## Validation
+
+UDA applies two complementary layers of validation.
+
+### Server-Side Validation
+
+<Tabs>
+  <Tab title="Bean Validation (JSR-380)">
+    Annotate DTO fields with standard constraint annotations. Spring MVC triggers validation automatically when `@Valid` is present on the method parameter.
+
+    ```java
+    public class UsuarioDto {
+
+        @NotNull
+        private Long id;
+
+        @NotBlank
+        @Size(min = 2, max = 100)
+        private String name;
+
+        @Email
+        @NotBlank
+        private String email;
+    }
+    ```
+  </Tab>
+  <Tab title="Spring Validator">
+    Implement `org.springframework.validation.Validator` for cross-field or database-backed rules that cannot be expressed with annotations alone.
+
+    ```java
+    @Component
+    public class UsuarioValidator implements Validator {
+
+        @Override
+        public boolean supports(Class<?> clazz) {
+            return UsuarioDto.class.equals(clazz);
+        }
+
+        @Override
+        public void validate(Object target, Errors errors) {
+            UsuarioDto dto = (UsuarioDto) target;
+            if (dto.getEmail() != null &&
+                    usuarioService.existsByEmail(dto.getEmail())) {
+                errors.rejectValue("email", "email.duplicate",
+                        "This e-mail is already in use.");
+            }
+        }
+    }
+    ```
+
+    Register the validator in the controller's `@InitBinder`:
+
+    ```java
+    @InitBinder
+    public void initBinder(WebDataBinder binder) {
+        binder.addValidators(usuarioValidator);
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Client-Side Validation
+
+The RUP validate component (`rup.validate`) wraps jQuery Validate and is configured in the JSP or JavaScript init file:
+
+```javascript
+$("#usuarioForm").rup_validate({
+    rules: {
+        name:  { required: true, minlength: 2, maxlength: 100 },
+        email: { required: true, email: true }
+    },
+    messages: {
+        name:  { required: $.rup.i18n.app.usuario.nameRequired },
+        email: { required: $.rup.i18n.app.usuario.emailRequired }
+    }
+});
+```
+
+<Tip>
+  Keep client-side rules in sync with server-side constraints. A mismatch means users may see a success response on the client but receive a 400 error from the server.
+</Tip>
+
+---
+
+## Adding Custom Actions
+
+To extend the generated CRUD with extra actions (e.g. "Export to PDF", "Approve"):
+
+<Steps>
+  <Step title="Add a controller method">
+    ```java
+    @RequestMapping(value = "/export", method = RequestMethod.GET)
+    public ResponseEntity<byte[]> export(@RequestParam List<Long> ids) {
+        byte[] pdf = usuarioService.exportPdf(ids);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", "usuarios.pdf");
+        return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
+    }
+    ```
+  </Step>
+  <Step title="Add a toolbar button in the JS init file">
+    Extend the `rup_table` options with a custom toolbar button. Place this in a separate JS file to avoid being overwritten on regeneration:
+
+    ```javascript
+    $("#usuarioTable").rup_table("option", "toolbar", {
+        buttons: [
+            {
+                type: "button",
+                label: $.rup.i18n.app.usuario.exportPdf,
+                icon: "ui-icon-print",
+                click: function() {
+                    var ids = $("#usuarioTable").rup_table("getSelectedIds");
+                    window.location.href = "../usuario/export?ids=" + ids.join(",");
+                }
+            }
+        ]
+    });
+    ```
+  </Step>
+</Steps>
+
+---
+
+## File Uploads in Maintenance Forms
+
+<Steps>
+  <Step title="Change the form encoding">
+    In `usuarioForm.jsp`, set `enctype="multipart/form-data"` on the `<form>` element (or configure it via `rup_form`).
+  </Step>
+  <Step title="Add a MultipartFile parameter to the controller">
+    ```java
+    @RequestMapping(value = "/add", method = RequestMethod.POST)
+    @ResponseBody
+    public UsuarioDto add(
+            @Valid @ModelAttribute UsuarioDto dto,
+            BindingResult bindingResult,
+            @RequestParam(required = false) MultipartFile avatar) {
+        if (avatar != null && !avatar.isEmpty()) {
+            String path = storageService.store(avatar);
+            dto.setAvatarPath(path);
+        }
+        return usuarioService.save(dto);
+    }
+    ```
+  </Step>
+  <Step title="Configure multipart resolver">
+    Add the `CommonsMultipartResolver` bean to `applicationContext.xml`:
+
+    ```xml
+    <bean id="multipartResolver"
+          class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="maxUploadSize" value="10485760"/> <!-- 10 MB -->
+    </bean>
+    ```
+  </Step>
+</Steps>
+
+<Warning>
+  Always validate file type and size on the server side regardless of any client-side restrictions, as client checks can be bypassed.
+</Warning>

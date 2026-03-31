@@ -1,97 +1,67 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "UDA - Utilidades de Desarrollo de Aplicaciones"
+description: "A comprehensive framework that accelerates Java enterprise application development with automatic code generation, RUP web components, and established MVC patterns."
 ---
 
-## Setting up
+UDA (Utilidades de Desarrollo de Aplicaciones) is an open-source toolkit developed by [EJIE](https://github.com/UDA-EJIE) that significantly accelerates enterprise Java application development. It automates repetitive, low-value tasks — such as scaffolding CRUD interfaces and generating layered MVC code — so you can focus on building business logic.
 
-Get your documentation site up and running in minutes.
-
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
-
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/installation">
+    Set up Eclipse, Maven, and the UDA plugin to get your development environment ready.
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Create your first UDA application in under 5 minutes using the built-in wizards.
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="Architecture" icon="layer-group" href="/architecture/overview">
+    Understand UDA's layered architecture and how its components fit together.
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="RUP Components" icon="puzzle-piece" href="/components/rup-components">
+    Explore the Rich UI Patterns component library for web interfaces.
   </Card>
-</Columns>
+</CardGroup>
 
-## Create beautiful pages
+## What UDA provides
 
-Everything you need to create world-class documentation.
+UDA bundles everything you need to build production-ready Java web applications:
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
+<CardGroup cols={3}>
+  <Card title="Eclipse Plugin" icon="plug" href="/guides/code-generation">
+    Generate complete project scaffolding, controllers, services, and CRUD interfaces directly from Eclipse wizards.
   </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
+  <Card title="RUP Components" icon="table-columns" href="/components/rup-components">
+    A rich library of accessible, Ajax-enabled UI components — tables, forms, date pickers, menus, and more.
   </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
+  <Card title="Maven Libraries" icon="book" href="/architecture/layers">
+    Java shared libraries (`x38ShLibClasses`) with base classes and utilities for controllers, services, and DAOs.
   </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
+  <Card title="Project Templates" icon="file-code" href="/guides/code-generation">
+    Pre-configured Maven archetypes with Spring MVC wiring, security integration, and best-practice structure.
   </Card>
-</Columns>
+  <Card title="UI Patterns" icon="desktop" href="/components/ui-patterns">
+    Ready-to-use patterns for maintenance forms, master-detail views, search tables, and more.
+  </Card>
+  <Card title="Accessibility" icon="universal-access" href="/components/accessibility">
+    Built-in WCAG 2.0 and WAI-ARIA compliance across all generated interfaces and components.
+  </Card>
+</CardGroup>
 
-## Need inspiration?
+## Get started
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+<Steps>
+  <Step title="Install prerequisites">
+    Install Java 8+, Eclipse IDE, and Maven 3.x on your development machine.
+  </Step>
+  <Step title="Install the UDA plugin">
+    Download the latest UDA plugin and templates from the [releases page](/reference/versions) and install them into Eclipse.
+  </Step>
+  <Step title="Generate your first project">
+    Use the **New UDA Project** wizard in Eclipse to scaffold a complete layered application with Spring MVC, persistence, and a web module.
+  </Step>
+  <Step title="Add CRUD interfaces">
+    Run the **Maintenance Assistant** to generate full CRUD forms, tables, and REST endpoints for any domain entity in minutes.
+  </Step>
+</Steps>
+
+<Note>
+  The latest stable release is **UDA 6.4.0** (December 2025). See the [versions page](/reference/versions) for all available downloads.
+</Note>

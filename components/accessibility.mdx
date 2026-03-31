@@ -1,0 +1,274 @@
+---
+title: "Accessibility"
+description: "How UDA and udaRUP achieve WCAG 2.0 Level AA compliance: WAI-ARIA support, keyboard navigation, screen reader testing, focus management, and a developer checklist."
+keywords: ["WCAG", "WAI-ARIA", "accessibility", "a11y", "keyboard navigation", "screen reader", "JAWS", "NVDA", "UDA", "RUP"]
+---
+
+Accessibility is built into UDA at the framework level. All `udaRUP` components are designed to meet [WCAG 2.0 Level AA](https://www.w3.org/TR/WCAG20/) out of the box, and the code wizard generates templates that include skip-navigation links and correct landmark structure.
+
+<Info>
+  You do not need to add ARIA attributes manually when using RUP components — the plugins apply them automatically. The developer checklist at the bottom of this page covers the cases where you extend or customize the generated code.
+</Info>
+
+---
+
+## WCAG 2.0 Level AA compliance
+
+All RUP components are designed against the four WCAG 2.0 principles:
+
+| Principle | How RUP addresses it |
+|---|---|
+| **Perceivable** | Text alternatives for images, sufficient color contrast, content not conveyed by color alone |
+| **Operable** | Full keyboard operability, no keyboard traps, skip navigation links |
+| **Understandable** | Labels for all form controls, descriptive error messages, consistent navigation |
+| **Robust** | Valid HTML, WAI-ARIA roles and properties, tested with assistive technologies |
+
+---
+
+## WAI-ARIA roles and attributes
+
+RUP components apply WAI-ARIA markup automatically on initialization. You do not need to add attributes in your JSP templates.
+
+### Component-to-ARIA mapping
+
+| RUP component | ARIA role(s) applied | Key attributes |
+|---|---|---|
+| `rup_table` | `grid`, `row`, `gridcell` | `aria-sort`, `aria-selected`, `aria-multiselectable` |
+| `rup_dialog` | `dialog` | `aria-labelledby`, `aria-describedby`, `aria-modal` |
+| `rup_tabs` | `tablist`, `tab`, `tabpanel` | `aria-controls`, `aria-selected`, `aria-labelledby` |
+| `rup_accordion` | `region` | `aria-expanded`, `aria-controls`, `aria-labelledby` |
+| `rup_menu` | `menubar`, `menu`, `menuitem` | `aria-haspopup`, `aria-expanded` |
+| `rup_select` / `rup_combo` | `listbox`, `option` | `aria-selected`, `aria-expanded`, `aria-activedescendant` |
+| `rup_autocomplete` | `combobox`, `listbox`, `option` | `aria-autocomplete`, `aria-expanded`, `aria-activedescendant` |
+| `rup_toolbar` | `toolbar` | `aria-label`, `aria-disabled` |
+| `rup_feedback` | `alert` or `status` | `aria-live`, `aria-atomic` |
+| `rup_form` | — | Error containers use `role="alert"` |
+| `rup_upload` | — | Progress bar uses `role="progressbar"` with `aria-valuenow` |
+
+### Live regions
+
+`rup_feedback` uses ARIA live regions so assistive technologies announce status changes without requiring focus:
+
+```javascript
+// Announcements are automatic — no extra markup needed
+$("#feedback").rup_feedback("set", "ok", "Record saved.");
+// Equivalent to: <div role="status" aria-live="polite">Record saved.</div>
+
+$("#feedback").rup_feedback("set", "error", "Validation failed.");
+// Equivalent to: <div role="alert" aria-live="assertive">Validation failed.</div>
+```
+
+---
+
+## Keyboard navigation
+
+Every RUP component supports full keyboard operation without a mouse.
+
+### Global keyboard patterns
+
+| Key | Behavior |
+|---|---|
+| `Tab` / `Shift+Tab` | Move focus between interactive elements |
+| `Enter` / `Space` | Activate the focused element |
+| `Escape` | Close the active dialog, menu, or dropdown |
+| Arrow keys | Navigate within a component (table rows, menu items, tabs) |
+
+### Component-specific keyboard behavior
+
+<AccordionGroup>
+
+  <Accordion title="rup_table keyboard navigation">
+
+| Key | Action |
+|---|---|
+| `Up` / `Down` arrow | Move between rows |
+| `Space` | Select / deselect a row (multi-select mode) |
+| `Enter` | Open the selected row's edit form |
+| `Page Up` / `Page Down` | Go to the previous / next page |
+| `Home` / `End` | Jump to the first / last page |
+| `Tab` | Move focus to the toolbar or filter form |
+
+  </Accordion>
+
+  <Accordion title="rup_dialog keyboard navigation">
+
+| Key | Action |
+|---|---|
+| `Tab` / `Shift+Tab` | Cycle focus through dialog controls only (focus is trapped inside) |
+| `Escape` | Close the dialog and return focus to the trigger element |
+| `Enter` | Activate the focused button |
+
+Focus is automatically moved to the first focusable element inside the dialog when it opens, and returned to the triggering element when it closes.
+
+  </Accordion>
+
+  <Accordion title="rup_tabs keyboard navigation">
+
+| Key | Action |
+|---|---|
+| `Left` / `Right` arrow | Move focus between tab buttons |
+| `Enter` / `Space` | Activate the focused tab |
+| `Tab` | Move focus from the tab list into the active panel |
+
+  </Accordion>
+
+  <Accordion title="rup_menu keyboard navigation">
+
+| Key | Action |
+|---|---|
+| `Right` / `Left` arrow | Move between top-level menu items (horizontal) |
+| `Down` / `Up` arrow | Open a submenu / move between submenu items |
+| `Enter` / `Space` | Follow the focused menu link |
+| `Escape` | Close the open submenu and return focus to the parent |
+
+  </Accordion>
+
+  <Accordion title="rup_select / rup_combo keyboard navigation">
+
+| Key | Action |
+|---|---|
+| `Alt+Down` or `Space` | Open the dropdown |
+| `Up` / `Down` arrow | Move between options |
+| `Enter` | Select the focused option |
+| `Escape` | Close the dropdown without changing selection |
+| Type characters | Jump to the first matching option |
+
+  </Accordion>
+
+</AccordionGroup>
+
+---
+
+## Screen reader support
+
+RUP components are tested with the following assistive technologies:
+
+| Screen reader | Browser | Platform |
+|---|---|---|
+| JAWS (latest) | Chrome, Firefox | Windows |
+| NVDA (latest) | Chrome, Firefox | Windows |
+| VoiceOver | Safari | macOS / iOS |
+
+### What screen readers announce
+
+- **Table navigation**: JAWS and NVDA announce the column header when a cell receives focus (`aria-sort` is read when sorting is active).
+- **Dialog open/close**: The dialog title is announced immediately on open; focus returns to the trigger on close.
+- **Feedback messages**: `role="alert"` messages are announced immediately; `role="status"` messages are announced at the next opportunity.
+- **Form errors**: Inline validation errors are associated with the relevant input using `aria-describedby`, so the error is read when the input receives focus.
+- **Select / autocomplete**: The number of options available and the currently selected value are announced as the user navigates the list.
+
+---
+
+## Focus management
+
+Correct focus management is critical for modal interactions. RUP handles this automatically in three scenarios:
+
+### Dialog focus
+
+```text
+1. User clicks "Edit" button
+2. Dialog opens → focus moves to first focusable element inside the dialog
+3. Tab cycling is restricted to the dialog (focus trap)
+4. User presses Escape or clicks "Cancel"
+5. Dialog closes → focus returns to the "Edit" button
+```
+
+### Page-load focus
+
+The UDA template includes a skip-navigation link as the first element in `<body>`. Keyboard users can press `Tab` once on page load to see the link and jump directly to the main content:
+
+```html
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<!-- ... header, navigation ... -->
+<main id="main-content">
+    <!-- Page content -->
+</main>
+```
+
+<Note>
+  The UDA Eclipse templates generate this skip link automatically. If you create a custom template, ensure the skip link is the first focusable element and that `#main-content` matches the `id` of your main landmark.
+</Note>
+
+### Toolbar focus after table operations
+
+After a delete or save operation completes, `rup_toolbar` returns focus to the **New** button to provide a logical starting point for the next action.
+
+---
+
+## Color contrast
+
+UDA's default theme (distributed with `rup.min.css`) meets WCAG 2.0 AA contrast ratios:
+
+| Element | Foreground | Background | Contrast ratio |
+|---|---|---|---|
+| Body text | `#333333` | `#FFFFFF` | 12.63:1 ✓ |
+| Links | `#0070C0` | `#FFFFFF` | 4.65:1 ✓ |
+| Toolbar buttons | `#FFFFFF` | `#0070C0` | 4.65:1 ✓ |
+| Error messages | `#FFFFFF` | `#C00000` | 5.74:1 ✓ |
+| Table row hover | `#333333` | `#EBF4FC` | 10.61:1 ✓ |
+
+<Warning>
+  If you override the default theme, verify your custom color combinations against the [WCAG 2.0 contrast requirement](https://www.w3.org/TR/WCAG20/#contrast-minimum) (4.5:1 for normal text, 3:1 for large text). Use a tool such as the [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/) to validate.
+</Warning>
+
+---
+
+## Form labels and error associations
+
+RUP and the generated JSP templates follow these rules for accessible forms:
+
+1. Every `<input>`, `<select>`, and `<textarea>` has a `<label>` with a matching `for`/`id` pair.
+2. Required fields include `aria-required="true"` (set by `rup_form` validation config).
+3. Inline error messages are injected by `rup_form` with `role="alert"` and linked to the input via `aria-describedby`.
+
+**Example generated markup (simplified)**
+
+```html
+<div class="form-group">
+    <label for="name">Name <span aria-hidden="true">*</span></label>
+    <input type="text" id="name" name="name" aria-required="true"
+           aria-describedby="name-error" />
+    <span id="name-error" role="alert" class="error" style="display:none">
+        Name is required.
+    </span>
+</div>
+```
+
+---
+
+## Developer checklist
+
+Use this checklist when you customize generated code or build new views that use RUP components.
+
+<AccordionGroup>
+<Accordion title="HTML structure">
+Page has a `main` landmark with a unique `id`. A skip-navigation link to the main content is the first focusable element. Heading hierarchy (`h1` to `h2` to `h3`) has no skipped levels. All landmark regions (`header`, `nav`, `main`, `footer`) are present. Multiple `nav` elements each have a distinct `aria-label`.
+</Accordion>
+<Accordion title="Images and icons">
+Decorative images have empty alt text (`alt=""`). Informative images have a descriptive `alt` attribute. Icon-only buttons have an `aria-label` or visually-hidden text describing the action. Charts and infographics have a text alternative or data table.
+</Accordion>
+<Accordion title="Form controls">
+Every input has an associated `label` (via `for`/`id` or `aria-labelledby`). Required fields declare `aria-required="true"`. Error messages are associated with their input via `aria-describedby`. Group-related inputs are wrapped in a `fieldset` with a `legend`. Date inputs rendered by `rup_date` have a clear format hint visible to all users.
+</Accordion>
+<Accordion title="Interactive components">
+Custom interactive widgets have appropriate ARIA roles. All interactive elements are reachable by keyboard. No `tabindex` values greater than `0` are used (they break natural tab order). Modal dialogs trap focus and return focus on close. Expandable sections toggle `aria-expanded` correctly.
+</Accordion>
+<Accordion title="Color and visual design">
+Information is not conveyed by color alone. Text color contrast meets 4.5:1 against the background (3:1 for large text). Focus indicators are visible — do not suppress `outline` without a custom replacement. Links are distinguishable from surrounding text by more than color.
+</Accordion>
+<Accordion title="Dynamic content">
+Status messages use `rup_feedback` (which applies `role="alert"` or `role="status"` automatically). Custom `role="alert"` regions start empty and have content injected dynamically. Loading spinners include `aria-busy="true"` on the updating container. After Ajax operations, focus returns to a logical location.
+</Accordion>
+<Accordion title="Testing">
+Tab through the entire page without a mouse and verify all functionality is reachable. Test with NVDA + Firefox or JAWS + Chrome and confirm tables, dialogs, and forms are correctly announced. Run a browser accessibility audit targeting a Lighthouse score of 90+. Verify that zoom at 200% does not cause content to overlap or be clipped.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Further reading
+
+- [WCAG 2.0 guidelines](https://www.w3.org/TR/WCAG20/)
+- [WAI-ARIA authoring practices](https://www.w3.org/TR/wai-aria-practices-1.1/)
+- [NVDA screen reader](https://www.nvaccess.org/download/)
+- [JAWS screen reader](https://www.freedomscientific.com/products/software/jaws/)

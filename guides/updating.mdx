@@ -1,0 +1,177 @@
+---
+title: Updating UDA
+description: Step-by-step instructions for upgrading UDA between minor, patch, and major versions, including pom.xml dependency updates, Eclipse plugin replacement, and RUP static asset migration.
+---
+
+This guide covers upgrading an existing UDA application to a newer release. The process differs slightly depending on how far apart the source and target versions are.
+
+## Supported Upgrade Paths
+
+<CardGroup cols={3}>
+  <Card title="6.x.x → 6.y.y" icon="arrow-up">
+    Minor or patch upgrade within the 6.x series. Typically straightforward; review the changelog for any breaking API changes.
+  </Card>
+  <Card title="5.x → 6.x" icon="arrow-up-right">
+    Major upgrade. Follow the full process below and pay close attention to breaking changes listed in the 6.x migration notes.
+  </Card>
+  <Card title="4.x → 5.x" icon="clock-rotate-left">
+    Legacy upgrade. Refer to the [UDA 4.x → 5.x wiki guide](https://github.com/UDA-EJIE/uda-ejie.github.io/wiki/Actualizar-5.x.x) and the TLD migration files at `/resources/migrateUDA4/`.
+  </Card>
+</CardGroup>
+
+<Info>
+  The latest stable release is **UDA 6.4.0** (16 December 2025). All v6 downloads are available in the [Google Drive v6.x.x folder](https://drive.google.com/drive/folders/1HpefoKbCBW3ymCfb5BevpcIeEJyzIVEz).
+</Info>
+
+---
+
+## General Upgrade Process
+
+<Steps>
+  <Step title="Download the new release artefacts">
+    From the [v6.x.x downloads folder](https://drive.google.com/drive/folders/1HpefoKbCBW3ymCfb5BevpcIeEJyzIVEz), download:
+
+    - **udaPlugin** — Eclipse plugin update site (`.zip`)
+    - **udaTemplates** — project and maintenance wizard templates (`.zip`)
+    - **udaRUP** — RUP static assets: CSS, JS, images, i18n (`.zip`)
+    - **udaLib** (`x38ShLibClasses`) — Java server-side library (Maven artifact or JAR)
+  </Step>
+  <Step title="Update the Eclipse plugin">
+    1. In Eclipse, go to **Help > Install New Software**.
+    2. Click **Add > Archive** and point to the downloaded `udaPlugin-vX.Y.Z.zip`.
+    3. Select all UDA features and click through the install wizard.
+    4. Restart Eclipse when prompted.
+
+    <Warning>
+      Uninstall the previous UDA plugin version before installing the new one to avoid conflicting feature versions.
+    </Warning>
+  </Step>
+  <Step title="Update Maven dependencies in pom.xml">
+    Open your project's parent `pom.xml` and bump the UDA version property:
+
+    ```xml
+    <!-- Parent pom.xml -->
+    <properties>
+        <uda.version>6.4.0-RELEASE</uda.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.ejie.x38</groupId>
+                <artifactId>x38ShLibClasses</artifactId>
+                <version>${uda.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    ```
+
+    Then run `mvn dependency:resolve` to confirm the new artefact resolves correctly before committing.
+  </Step>
+  <Step title="Replace RUP static resources">
+    The WAR module contains a static-resources sub-module (or a `src/main/webapp/resources` folder) where the unpacked RUP assets live.
+
+    1. Delete the contents of the existing `rup/` subfolder.
+    2. Unzip `rup-vX.Y.Z.zip` into that same location.
+    3. Do **not** delete custom CSS or JS files that sit alongside the RUP folder — only replace the `rup/` directory itself.
+  </Step>
+  <Step title="Apply migration scripts (if provided)">
+    Some releases ship SQL or XML migration scripts in the `udaTemplates` archive under `migrations/`. Apply these to your development database first and verify, then plan the same migration for test and production environments.
+  </Step>
+  <Step title="Review the changelog for breaking changes">
+    Read the release notes on the [Actualizar-6.x.x wiki page](https://github.com/UDA-EJIE/uda-ejie.github.io/wiki/Actualizar-6.x.x) before deploying. Pay attention to:
+
+    - Renamed or removed RUP component options
+    - Changed controller base-class method signatures
+    - Updated Spring or Hibernate version requirements
+    - New mandatory configuration properties
+  </Step>
+  <Step title="Build, test, and deploy">
+    ```bash
+    mvn clean package -P test
+    ```
+
+    Deploy the EAR to a test server and perform regression testing before promoting to production.
+  </Step>
+</Steps>
+
+---
+
+## pom.xml Dependency Reference
+
+The table below shows the dependency coordinates for each UDA component.
+
+<CodeGroup>
+```xml Parent pom.xml
+<properties>
+    <uda.version>6.4.0-RELEASE</uda.version>
+</properties>
+
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>com.ejie.x38</groupId>
+            <artifactId>x38ShLibClasses</artifactId>
+            <version>${uda.version}</version>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+```
+
+```xml EJB module pom.xml
+<dependency>
+    <groupId>com.ejie.x38</groupId>
+    <artifactId>x38ShLibClasses</artifactId>
+    <!-- version inherited from parent dependencyManagement -->
+</dependency>
+```
+</CodeGroup>
+
+---
+
+## Upgrading from 4.x to 5.x (Legacy)
+
+<Warning>
+  The 4.x → 5.x upgrade requires additional steps due to changes in the JSP tag library (TLD) and Spring version.
+</Warning>
+
+TLD migration helper files are provided in the templates archive at:
+
+```
+/resources/migrateUDA4/
+```
+
+These include search-and-replace mappings for renamed tags and attributes. Apply them with your IDE's project-wide find-and-replace or a migration script before updating the Maven dependencies.
+
+Refer to the official [Actualizar-5.x.x wiki guide](https://github.com/UDA-EJIE/uda-ejie.github.io/wiki/Actualizar-5.x.x) for the complete procedure.
+
+---
+
+## Version History at a Glance
+
+| Version | Date | Status | Downloads |
+|---|---|---|---|
+| 6.4.0 | 16 Dec 2025 | **Current** | [v6.x.x folder](https://drive.google.com/drive/folders/1HpefoKbCBW3ymCfb5BevpcIeEJyzIVEz) |
+| 5.4.2 | 21 Jan 2025 | Maintenance | [v5.x.x folder](https://drive.google.com/drive/folders/1GVDxDsi8dkbxrfP35XC5BHJYk_QMFsrJ) |
+| 4.5.4 | 30 Sep 2025 | Legacy | [v4.x.x folder](https://drive.google.com/drive/folders/1lGMFN6CiVUOvlN4Vvfq6c6bDPPAjktXF) |
+
+Full release history: [Versiones-6.x.x wiki](https://github.com/UDA-EJIE/uda-ejie.github.io/wiki/Versiones-6.x.x)
+
+---
+
+## Troubleshooting Common Upgrade Issues
+
+<Tabs>
+  <Tab title="ClassNotFoundException after update">
+    The old `x38ShLibClasses` JAR may still be on the classpath. Check the EAR `lib/` directory and the WAR `WEB-INF/lib/` for duplicate or outdated JARs and remove them. Then run a clean Maven build: `mvn clean package`.
+  </Tab>
+  <Tab title="RUP component options not recognised">
+    A component option may have been renamed or removed in the new RUP release. Open the browser developer console, note the warning or error, and compare the option name against the updated RUP component documentation in the new `udaRUP` package.
+  </Tab>
+  <Tab title="Plugin wizards not visible after update">
+    Eclipse may have cached the old plugin. Try **Help > Check for Updates**, or uninstall the UDA plugin from **Help > About Eclipse > Installation Details**, restart Eclipse, and install fresh from the new archive.
+  </Tab>
+  <Tab title="JSP compilation errors after TLD update">
+    Clear the application server's work directory (e.g. `JBOSS_HOME/standalone/tmp/`) and redeploy. Stale compiled JSPs may reference old tag library descriptors.
+  </Tab>
+</Tabs>

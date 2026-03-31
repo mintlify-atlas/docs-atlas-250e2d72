@@ -1,0 +1,176 @@
+---
+title: Code Generation
+description: Use the UDA Eclipse plugin wizards to scaffold complete projects, CRUD maintenance screens, EJB stubs, and WAR modules in minutes.
+---
+
+The UDA Eclipse plugin ships several wizards accessible via **File > New > Other > UDA**. Each wizard automates a different tier of boilerplate so you can focus on business logic rather than repetitive scaffolding.
+
+## Available Wizards
+
+<CardGroup cols={2}>
+  <Card title="New UDA Project" icon="folder-plus">
+    Scaffolds a complete EAR/EJB/WAR Maven multi-module project with Spring MVC pre-configured.
+  </Card>
+  <Card title="New UDA Maintenance" icon="table">
+    Generates a full CRUD maintenance screen (controller, service, DAO, DTOs, JSP views) for a single entity.
+  </Card>
+  <Card title="New UDA EJB" icon="server">
+    Generates EJB client and server stubs for remote service calls.
+  </Card>
+  <Card title="New UDA WAR Module" icon="puzzle-piece">
+    Adds a new web module to an existing UDA project structure.
+  </Card>
+</CardGroup>
+
+---
+
+## New UDA Project Wizard
+
+The **Asistente de generación de proyectos** creates a ready-to-run Maven project from scratch.
+
+<Note>
+  A screenshot of this wizard is available in the UDA plugin documentation as `Asistente-de-generacion-de-proyectos.png`.
+</Note>
+
+### Inputs
+
+| Field | Description | Example |
+|---|---|---|
+| Project name | Eclipse project name | `myApp` |
+| Group ID | Maven group identifier | `com.example` |
+| Artifact ID | Maven artifact identifier | `myapp` |
+| Base package | Root Java package | `com.example.myapp` |
+| Java version | Target JDK version | `8` |
+
+### Generated Output
+
+The wizard produces **3–4 Maven modules** wired together in a parent POM:
+
+```
+myApp/                          ← Parent POM (EAR)
+├── myAppEJB/                   ← EJB module (business logic)
+│   └── src/main/resources/
+│       └── META-INF/
+│           ├── persistence.xml
+│           └── applicationContext.xml
+├── myAppWAR/                   ← Web module (Spring MVC)
+│   └── src/main/webapp/
+│       └── WEB-INF/
+│           ├── web.xml
+│           ├── dispatcher-servlet.xml
+│           └── applicationContext-security.xml
+└── myAppEAR/                   ← EAR assembly module
+```
+
+---
+
+## New UDA Maintenance Wizard
+
+The **Asistente de generación de mantenimiento** generates a complete CRUD screen for one entity class.
+
+<Note>
+  A screenshot of this wizard is available as `Asistente-de-generacion-de-mantenimiento.png`.
+</Note>
+
+### Inputs
+
+| Field | Description |
+|---|---|
+| Entity class | Select an existing JPA entity from the project |
+| Field selection | Choose which entity fields to expose in the UI |
+| Pattern type | `form` (modal form), `inline` (row editing), or `master-detail` |
+
+### Generated Output
+
+For an entity named `Usuario` the wizard produces:
+
+```
+usuario/
+├── controller/
+│   └── UsuarioController.java
+├── service/
+│   ├── UsuarioService.java
+│   └── UsuarioServiceImpl.java
+├── dao/
+│   ├── UsuarioDao.java
+│   └── UsuarioDaoImpl.java
+├── model/
+│   ├── Usuario.java            (JPA entity)
+│   └── UsuarioDto.java         (Transfer object)
+└── WEB-INF/views/usuario/
+    ├── usuario.jsp             (List / search view)
+    └── usuarioForm.jsp         (Edit / create form)
+```
+
+A JavaScript initialisation file is also written to the static resources module:
+
+```javascript
+$(document).ready(function() {
+    // Initialize RUP table
+    $("#usuarioTable").rup_table({
+        url: "../usuario/search",
+        colModel: [
+            { label: "ID",    name: "id"    },
+            { label: "Name",  name: "name"  },
+            { label: "Email", name: "email" }
+        ],
+        multiselect: false,
+        formEdit: true
+    });
+});
+```
+
+### Pattern types
+
+<Tabs>
+  <Tab title="Form (modal)">
+    The default pattern. Edit and create actions open a modal dialog over the list table. Best for entities with many fields.
+  </Tab>
+  <Tab title="Inline">
+    Rows in the table become editable in place. Best for simple entities with 3–5 fields.
+  </Tab>
+  <Tab title="Master-Detail">
+    A parent list drives a subordinate detail list or form beneath it. Best for one-to-many relationships.
+  </Tab>
+</Tabs>
+
+---
+
+## New UDA EJB Wizard
+
+Generates the remote interface, bean class, and client proxy for an EJB service. Use this when a WAR module needs to call business logic packaged in a separate EJB module.
+
+---
+
+## New UDA WAR Module Wizard
+
+Adds a new Spring MVC WAR module with its own `dispatcher-servlet.xml`, `web.xml`, and static-resources stub to an existing UDA EAR project.
+
+---
+
+## Customising Generated Code
+
+<Warning>
+  Regenerating a maintenance screen overwrites files in the `controller`, `service`, `dao`, and `model` packages, as well as the JSP views. Any manual edits in those locations will be lost.
+</Warning>
+
+Adopt the following strategy to keep customisations safe across regenerations:
+
+<Steps>
+  <Step title="Extend, don't edit generated classes">
+    Create subclasses or Spring `@Component` beans that override or supplement the generated classes. The generator will not touch files it did not originally create.
+  </Step>
+  <Step title="Keep UI customisations in separate JS files">
+    The generated `usuario.js` initialisation file is regenerated. Place custom widget options or event handlers in a separate file (e.g. `usuarioCustom.js`) that you include after the generated file.
+  </Step>
+  <Step title="Use JSP fragments for view additions">
+    Add custom form sections via `<jsp:include>` of a hand-written fragment rather than editing the generated JSP directly.
+  </Step>
+  <Step title="Pin your generator version">
+    Record the UDA plugin version in the project README. Regenerating with a different plugin version may alter the generated structure.
+  </Step>
+</Steps>
+
+<Tip>
+  Files that are safe to edit freely: `persistence.xml`, `applicationContext.xml`, `applicationContext-security.xml`, `dispatcher-servlet.xml`, and any hand-written class outside the generated packages.
+</Tip>

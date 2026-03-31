@@ -1,0 +1,75 @@
+---
+title: "Introduction to UDA"
+description: "UDA (Utilidades de Desarrollo de Aplicaciones) is a comprehensive toolkit by EJIE and the Basque Government that accelerates Java enterprise application development."
+---
+
+**UDA** is a complete set of utilities, tools, libraries, plugins, guides, and technical recommendations developed by [EJIE](https://github.com/UDA-EJIE) — the IT services arm of the Basque Government. It significantly accelerates the development of enterprise Java applications by automating repetitive scaffolding tasks while preserving full developer freedom.
+
+<Info>
+  The latest stable release is **UDA 6.4.0** (December 2025), licensed under the [European Union Public Licence (EUPL) v1.1](https://joinup.ec.europa.eu/community/eupl/og_page/european-union-public-licence-eupl-v11).
+</Info>
+
+## Key goals
+
+UDA is built around three guiding principles:
+
+**Increase developer productivity** — UDA automates low-value, repetitive tasks such as scaffolding CRUD interfaces, wiring MVC layers, and configuring Spring — so teams spend time on business logic, not boilerplate.
+
+**Minimal learning curve** — UDA does not reinvent the wheel. It builds on established frameworks (Spring MVC, Maven, jQuery) that developers already know, so adoption is incremental and non-disruptive.
+
+**Modular architecture** — Each UDA component is decoupled and replaceable. You can adopt the parts that fit your project without committing to the entire stack.
+
+Beyond these pillars, UDA also delivers:
+
+- Automatic generation of [CRUD maintenance interfaces](https://github.com/UDA-EJIE/uda-ejie.github.io/wiki/Patrones#14._Mantenimiento_con_formulario) and common web patterns
+- Layered MVC code generation following established architectural conventions
+- Built-in WCAG 2.0 and WAI-ARIA accessibility compliance
+- RIA/Ajax web usability patterns out of the box
+- Configurable output that adapts to organizational standards
+
+## The 5 main components
+
+<CardGroup cols={2}>
+  <Card title="udaPlugin" icon="plug" href="https://github.com/UDA-EJIE/udaPlugin/releases/tag/v6.4.0">
+    An Eclipse IDE plugin that provides project creation wizards, code generators, and the Maintenance Assistant. The primary entry point for UDA development.
+  </Card>
+  <Card title="udaTemplates" icon="file-code" href="https://github.com/UDA-EJIE/udaTemplates/releases/tag/v6.4.0">
+    Maven project archetypes and file templates that define the standard structure of UDA applications — EAR, EJB, and WAR modules pre-wired for Spring MVC.
+  </Card>
+  <Card title="udaRUP" icon="table-columns" href="https://github.com/UDA-EJIE/udaRUP/releases/tag/v6.4.0">
+    Rich UI Patterns — a library of accessible, Ajax-enabled web components (data tables, date pickers, forms, menus, autocomplete, and more) built on jQuery.
+  </Card>
+  <Card title="udaLib" icon="book" href="https://github.com/UDA-EJIE/udaLib/releases/tag/v6.4.0">
+    Java shared libraries (`x38ShLibClasses`) that provide base classes, utilities, and integrations for controllers, services, DAOs, and cross-cutting concerns.
+  </Card>
+</CardGroup>
+
+<Card title="udaHdiv" icon="shield" href="https://github.com/UDA-EJIE/udaHdiv/releases/tag/v5.2.0">
+  Security integration layer based on [HDIV](https://hdivsecurity.com/), providing protection against common web application attacks (CSRF, SQL injection, parameter tampering) with minimal configuration.
+</Card>
+
+## Who UDA is for
+
+UDA targets Java enterprise developers building web applications in environments that use:
+
+- **Spring MVC** as the web framework
+- **Maven** for dependency management and build
+- **Eclipse IDE** as the development environment
+- **Java 8 or higher** on the JVM
+
+It is particularly well-suited for organizations — such as public administrations — that need consistent architecture, accessibility compliance, and rapid delivery across multiple applications.
+
+<Note>
+  UDA is maintained by EJIE for the Basque Government's software ecosystem, but it is open source and available to any team with similar requirements.
+</Note>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/installation">
+    Set up your development environment with the Eclipse bundle or install the plugin manually into an existing Eclipse.
+  </Card>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Create your first UDA project and generate a working CRUD interface in under 5 minutes.
+  </Card>
+</CardGroup>

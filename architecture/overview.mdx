@@ -1,0 +1,96 @@
+---
+title: 'Architecture overview'
+description: 'High-level overview of the UDA framework components, technology stack, and how the pieces fit together.'
+keywords: ['UDA', 'architecture', 'components', 'Spring MVC', 'Maven', 'jQuery', 'udaPlugin', 'udaRUP', 'udaLib']
+---
+
+UDA is not another framework built from scratch. Its core philosophy is to **adopt and build on established, well-known technologies** rather than reinventing the wheel. Developers already familiar with Spring MVC, Maven, jQuery, or Hibernate will find the learning curve minimal—UDA layers productivity tooling on top of what they already know.
+
+The framework accelerates Java enterprise development by automating low-value repetitive tasks: project scaffolding, CRUD interface generation, layer wiring, and security configuration. It does this without locking developers into a single model—everything it generates is standard Java code that can be extended or replaced.
+
+## The 5 components
+
+UDA is composed of five distinct modules that work together across the development lifecycle.
+
+<CardGroup cols={2}>
+  <Card title="udaPlugin" icon="puzzle-piece">
+    An Eclipse IDE plugin that provides code-generation wizards. Developers use it to create new projects, generate EAR/EJB/WAR module skeletons, and scaffold CRUD maintenance screens—all from a graphical interface without writing boilerplate by hand.
+  </Card>
+  <Card title="udaTemplates" icon="copy">
+    Maven archetypes and project templates that define the standard multi-module project structure (`*-ear`, `*-ejb`, `*-war`, `*-static`). The Eclipse wizards invoke these archetypes under the hood to produce a fully wired, buildable project in seconds.
+  </Card>
+  <Card title="udaRUP" icon="layer-group">
+    A JavaScript and CSS library of Rich Internet Application (RIA) UI components built on jQuery and jQuery UI. RUP components—tables, forms, date-pickers, autocomplete fields, toolbars, and more—implement established web usability patterns and WCAG 2.0/WAI-ARIA accessibility standards out of the box.
+  </Card>
+  <Card title="udaLib (x38ShLibClasses)" icon="book">
+    The Java shared library that provides the base classes every generated project extends: `BaseController`, `BaseService`, and `BaseDao`. It also bundles cross-cutting utilities for logging, exception handling, security context access, and Spring MVC integration helpers.
+  </Card>
+  <Card title="udaHdiv" icon="shield">
+    An integration layer for [HDIV Security](https://hdivsecurity.com/) that adds CSRF token validation and XSS protection to UDA-generated web applications. It plugs into Spring Security and is configured automatically in generated projects.
+  </Card>
+</CardGroup>
+
+## Technology stack
+
+UDA-generated projects are built on a well-established Java enterprise stack. UDA contributes configuration, base classes, and tooling—the underlying technologies are industry-standard.
+
+<AccordionGroup>
+  <Accordion title="Backend" icon="server">
+    | Technology | Role |
+    |---|---|
+    | Spring MVC | Web layer: request routing, controllers, view resolution |
+    | Spring Security + HDIV | Authentication, authorization, CSRF/XSS protection |
+    | Hibernate / JPA | ORM and database persistence |
+    | Spring Data JPA | Repository pattern for DAO layer |
+    | Maven | Build system, dependency management, multi-module project structure |
+    | Java EE (EAR/EJB) | Enterprise module packaging and deployment |
+  </Accordion>
+  <Accordion title="Frontend" icon="browser">
+    | Technology | Role |
+    |---|---|
+    | jQuery + jQuery UI | DOM manipulation, event handling, UI widgets |
+    | RUP components (udaRUP) | High-level UDA UI components built on jQuery |
+    | DataTables | Paginated, sortable, filterable data grids |
+    | JSP / JSTL / TLD | Server-side view rendering |
+    | Ajax / JSON | Asynchronous communication between RUP components and controllers |
+  </Accordion>
+  <Accordion title="Tooling" icon="wrench">
+    | Technology | Role |
+    |---|---|
+    | Eclipse IDE | Development environment with udaPlugin installed |
+    | Maven Archetypes (udaTemplates) | Project scaffolding |
+    | udaPlugin Wizards | GUI-driven code generation within Eclipse |
+  </Accordion>
+</AccordionGroup>
+
+## How the components interact
+
+The five components each operate at a different phase of the development workflow:
+
+<Steps>
+  <Step title="Project creation (udaPlugin + udaTemplates)">
+    The developer opens the UDA project wizard in Eclipse. udaPlugin invokes the Maven archetypes from udaTemplates to generate the multi-module project structure: `myapp-ear`, `myapp-ejb`, `myapp-war`, and `myapp-static`. All modules are pre-wired with Spring MVC, Spring Security, and udaLib dependencies.
+  </Step>
+  <Step title="Code generation (udaPlugin)">
+    For each domain entity, the developer runs the maintenance wizard inside Eclipse. udaPlugin generates the full vertical slice: a JPA entity, a Spring Data repository, a service class extending `BaseService`, a Spring MVC controller extending `BaseController`, and a JSP view with RUP component tags.
+  </Step>
+  <Step title="UI rendering at runtime (udaRUP)">
+    When the application runs in the browser, the JSP views load RUP JavaScript and CSS from the `*-static` module. RUP components initialise jQuery widgets, bind to the page's form elements, and handle Ajax communication with the Spring MVC controllers automatically.
+  </Step>
+  <Step title="Request handling (udaLib + Spring MVC)">
+    Incoming HTTP requests are routed by Spring MVC to a controller that extends `BaseController`. The controller delegates business logic to a service extending `BaseService`, which in turn calls a DAO extending `BaseDao` (or a Spring Data JPA repository). Results are serialised to JSON and consumed by the calling RUP component.
+  </Step>
+  <Step title="Security enforcement (udaHdiv)">
+    On every state-changing request, udaHdiv validates the HDIV token injected into forms and Ajax calls. Requests that fail validation are rejected before reaching the controller, protecting the application from CSRF and XSS attacks without additional developer effort.
+  </Step>
+</Steps>
+
+<Tip>
+  Because UDA generates standard Spring MVC and JPA code, every generated file can be modified freely. UDA provides a starting point, not a runtime constraint.
+</Tip>
+
+## Component interaction diagram
+
+<Frame caption="UDA conceptual architecture: components and their relationships">
+  <img src="/images/Arquitectura-conceptual-capas.png" alt="UDA conceptual architecture diagram showing the five components and their relationships across the development stack" />
+</Frame>

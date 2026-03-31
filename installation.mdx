@@ -1,0 +1,153 @@
+---
+title: "Installation"
+description: "Set up your UDA development environment using the pre-configured Eclipse bundle or by installing the plugin manually into an existing Eclipse."
+---
+
+This guide walks you through installing UDA 6.4.0 — the latest stable release. There are two paths: download the pre-configured Eclipse bundle (recommended for new setups) or install the UDA plugin into an existing Eclipse instance.
+
+## Prerequisites
+
+Before you begin, ensure the following are available on your machine:
+
+- **Java 8 or higher** — UDA-generated applications require a JDK (not just a JRE). Verify with `java -version`.
+- **Maven 3.x** — Used for dependency management and building UDA projects. Verify with `mvn -version`.
+- **Eclipse IDE** — Required for the UDA plugin and wizards (Option B only; Option A bundles Eclipse).
+
+<Warning>
+  UDA 6.4.0 requires Java 8 as a minimum. Java 17+ is supported. Ensure your `JAVA_HOME` environment variable points to a full JDK installation.
+</Warning>
+
+## Choose your installation method
+
+<Tabs>
+  <Tab title="Option A: Eclipse bundle (recommended)">
+
+The easiest way to get started is to download the pre-configured Eclipse bundle. It includes Eclipse 2024-06, the UDA 6.4.0 plugin, and all required templates — ready to use with no manual configuration.
+
+<Steps>
+  <Step title="Download the Eclipse bundle">
+    Download the **Eclipse 2024-06 with UDA 6.4.0** bundle from Google Drive:
+
+    [Download Eclipse 2024-06 + UDA 6.4.0](https://drive.google.com/file/d/1l5zNhnNiQqxthxCb_3MHtZsXLoPx9hif/view)
+
+    The archive is a pre-configured Eclipse installation. No installer is required.
+  </Step>
+  <Step title="Extract the archive">
+    Extract the downloaded ZIP or tar.gz to a directory of your choice (for example, `C:\eclipse-uda` on Windows or `~/eclipse-uda` on Linux/macOS).
+
+    <Note>
+      Avoid paths with spaces. Eclipse can have issues with installation paths containing spaces on some operating systems.
+    </Note>
+  </Step>
+  <Step title="Launch Eclipse">
+    Run the `eclipse` executable inside the extracted directory. On first launch, Eclipse will ask you to choose a workspace directory — select or create a folder where your UDA projects will live.
+  </Step>
+  <Step title="Verify the UDA plugin">
+    Go to **Help > About Eclipse IDE**. Click **Installation Details** and confirm that the UDA plugin appears in the list of installed features.
+  </Step>
+</Steps>
+
+  </Tab>
+  <Tab title="Option B: Manual plugin install">
+
+If you already have Eclipse installed and want to add UDA to it, follow these steps.
+
+<Steps>
+  <Step title="Download udaPlugin">
+    Download the UDA plugin archive from the GitHub releases page:
+
+    [udaPlugin v6.4.0 on GitHub](https://github.com/UDA-EJIE/udaPlugin/releases/tag/v6.4.0)
+
+    Download the `.zip` file containing the Eclipse update site.
+  </Step>
+  <Step title="Install via Eclipse update site">
+    1. Open Eclipse and go to **Help > Install New Software**.
+    2. Click **Add**, then **Archive**.
+    3. Select the downloaded `.zip` file and give it a name (for example, `UDA 6.4.0`).
+    4. Check the UDA features in the list and click **Next**.
+    5. Accept the license agreement and click **Finish**.
+    6. Restart Eclipse when prompted.
+
+    <Warning>
+      Do not uncheck "Contact all update sites during install" if your Eclipse is behind a proxy — proxy settings may need to be configured first under **Window > Preferences > General > Network Connections**.
+    </Warning>
+  </Step>
+  <Step title="Download udaTemplates">
+    Download the UDA project templates from GitHub:
+
+    [udaTemplates v6.4.0 on GitHub](https://github.com/UDA-EJIE/udaTemplates/releases/tag/v6.4.0)
+
+    Extract the downloaded templates archive to a local directory.
+  </Step>
+  <Step title="Configure templates in Eclipse">
+    1. Open **Window > Preferences** in Eclipse.
+    2. Navigate to **UDA > Templates**.
+    3. Set the templates path to the directory where you extracted the templates archive.
+    4. Click **Apply and Close**.
+  </Step>
+</Steps>
+
+  </Tab>
+</Tabs>
+
+## Add the Maven dependency (udaLib)
+
+UDA's Java shared libraries are distributed via Maven. Add the following dependency to the `pom.xml` of your project's EJB or service module:
+
+<CodeGroup>
+
+```xml pom.xml
+<dependency>
+    <groupId>com.ejie.x38</groupId>
+    <artifactId>x38ShLibClasses</artifactId>
+    <version>6.4.0-RELEASE</version>
+</dependency>
+```
+
+</CodeGroup>
+
+<Note>
+  The UDA project wizard (covered in the [quickstart](/quickstart)) adds this dependency automatically to generated projects. You only need to add it manually if you are integrating UDA libraries into an existing Maven project.
+</Note>
+
+If your organization does not have a Maven repository that mirrors the EJIE artifacts, download the library JAR directly and install it to your local Maven repository:
+
+```bash
+mvn install:install-file \
+  -Dfile=x38ShLibClasses-6.4.0-RELEASE.jar \
+  -DgroupId=com.ejie.x38 \
+  -DartifactId=x38ShLibClasses \
+  -Dversion=6.4.0-RELEASE \
+  -Dpackaging=jar
+```
+
+## Download RUP components (udaRUP)
+
+The RUP frontend component library is distributed as a standalone ZIP — it is not a Maven artifact. Download it from GitHub and place it in your project's web resources directory.
+
+[udaRUP v6.4.0 on GitHub](https://github.com/UDA-EJIE/udaRUP/releases/tag/v6.4.0)
+
+<Note>
+  The UDA project wizard copies the RUP components into the correct location automatically when you create a new project. Manual placement is only needed when upgrading an existing project or when creating a project without the wizard.
+</Note>
+
+## Verify the installation
+
+Once installation is complete, confirm everything is working:
+
+1. Open Eclipse and check **Help > About Eclipse IDE > Installation Details** for the UDA plugin.
+2. Go to **File > New > Other** and search for **UDA** — you should see the UDA project and maintenance wizards.
+3. Run `mvn -version` in a terminal to confirm Maven is on your `PATH`.
+
+If the UDA wizards do not appear, restart Eclipse and check that the plugin was installed without errors in the Eclipse error log (**Window > Show View > Error Log**).
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Create your first UDA project and generate a working CRUD interface.
+  </Card>
+  <Card title="Versions" icon="tag" href="https://github.com/UDA-EJIE/uda-ejie.github.io/wiki/Versiones-6.x.x">
+    Browse all available UDA versions and their release notes.
+  </Card>
+</CardGroup>

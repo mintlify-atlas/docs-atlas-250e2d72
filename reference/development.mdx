@@ -1,0 +1,168 @@
+---
+title: 'Contributing to UDA'
+description: 'How to build UDA components from source and contribute changes back to the project.'
+---
+
+UDA is composed of several repositories under the [UDA-EJIE GitHub organization](https://github.com/UDA-EJIE). Contributions to any component are welcome via pull requests.
+
+## Repository structure
+
+<CardGroup cols={2}>
+  <Card title="uda-ejie.github.io" icon="globe" href="https://github.com/UDA-EJIE/uda-ejie.github.io">
+    Project website, wiki, and issue tracker. Use this repository to report bugs, request features, or improve documentation.
+  </Card>
+  <Card title="udaPlugin" icon="puzzle-piece" href="https://github.com/UDA-EJIE/udaPlugin">
+    Eclipse plugin providing project creation wizards, code generation assistants, and IDE integration. Built with Eclipse PDE.
+  </Card>
+  <Card title="udaTemplates" icon="file-code" href="https://github.com/UDA-EJIE/udaTemplates">
+    Maven archetypes and project templates used by the Eclipse plugin to scaffold new applications.
+  </Card>
+  <Card title="udaRUP" icon="palette" href="https://github.com/UDA-EJIE/udaRUP">
+    JavaScript and CSS UI components (RUP library). Built with Node.js and Grunt.
+  </Card>
+  <Card title="udaLib" icon="book" href="https://github.com/UDA-EJIE/udaLib">
+    Shared Java libraries (x38ShLibClasses). Built with Maven and published as Maven artifacts.
+  </Card>
+  <Card title="udaHdiv" icon="shield" href="https://github.com/UDA-EJIE/udaHdiv">
+    HDIV security integration layer for UDA 5.x applications.
+  </Card>
+</CardGroup>
+
+---
+
+## Prerequisites
+
+Different components require different toolchains.
+
+<Tabs>
+  <Tab title="udaPlugin">
+    - Java Development Kit (JDK) 11 or later
+    - Eclipse IDE for RCP and RAP Developers (includes Eclipse PDE)
+    - Git
+  </Tab>
+  <Tab title="udaRUP">
+    - Node.js 18 or later
+    - npm (bundled with Node.js)
+    - Grunt CLI: `npm install -g grunt-cli`
+    - Git
+  </Tab>
+  <Tab title="udaLib">
+    - JDK 11 or later
+    - Maven 3.6 or later
+    - Git
+  </Tab>
+  <Tab title="udaTemplates">
+    - JDK 11 or later
+    - Maven 3.6 or later
+    - Git
+  </Tab>
+</Tabs>
+
+---
+
+## Building from source
+
+### udaPlugin (Eclipse PDE)
+
+<Steps>
+  <Step title="Clone the repository">
+    ```bash
+    git clone https://github.com/UDA-EJIE/udaPlugin.git
+    ```
+  </Step>
+  <Step title="Import into Eclipse">
+    Open Eclipse IDE for RCP and RAP Developers. Choose **File → Import → Existing Projects into Workspace** and select the cloned directory.
+  </Step>
+  <Step title="Set the target platform">
+    Open the `.target` file in the project and click **Set as Active Target Platform**. Eclipse will download the required dependencies.
+  </Step>
+  <Step title="Build the plugin">
+    Right-click the feature project and choose **Export → Deployable features** to produce an update site zip, or use **Run as → Eclipse Application** to launch a test instance.
+  </Step>
+</Steps>
+
+### udaRUP (Node.js / Grunt)
+
+<Steps>
+  <Step title="Clone the repository">
+    ```bash
+    git clone https://github.com/UDA-EJIE/udaRUP.git
+    cd udaRUP
+    ```
+  </Step>
+  <Step title="Install dependencies">
+    ```bash
+    npm install
+    ```
+  </Step>
+  <Step title="Run the build">
+    ```bash
+    grunt build
+    ```
+    The output is written to the `dist/` directory as minified JS and CSS bundles.
+  </Step>
+  <Step title="Run tests">
+    ```bash
+    grunt test
+    ```
+  </Step>
+</Steps>
+
+### udaLib (Maven)
+
+<Steps>
+  <Step title="Clone the repository">
+    ```bash
+    git clone https://github.com/UDA-EJIE/udaLib.git
+    cd udaLib
+    ```
+  </Step>
+  <Step title="Build and install locally">
+    ```bash
+    mvn clean install
+    ```
+    The artifact is installed to your local Maven repository (`~/.m2`).
+  </Step>
+  <Step title="Run tests">
+    ```bash
+    mvn test
+    ```
+  </Step>
+</Steps>
+
+---
+
+## Submitting issues
+
+Report bugs and request features through the [uda-ejie.github.io issue tracker](https://github.com/UDA-EJIE/uda-ejie.github.io/issues). Include the UDA version, affected component, steps to reproduce, and expected vs. actual behavior.
+
+---
+
+## Pull request process
+
+<Steps>
+  <Step title="Fork the repository">
+    Fork the relevant repository to your GitHub account.
+  </Step>
+  <Step title="Create a feature branch">
+    Branch from `develop` following the GitFlow convention:
+    ```bash
+    git checkout develop
+    git checkout -b feature/your-feature-name
+    ```
+  </Step>
+  <Step title="Make your changes">
+    Implement your change with tests where applicable. Follow the existing code style in the repository.
+  </Step>
+  <Step title="Open a pull request">
+    Push your branch and open a pull request targeting the `develop` branch of the upstream repository. Describe what changed and why.
+  </Step>
+</Steps>
+
+---
+
+## License
+
+UDA source code (plugin, templates, libraries, and RUP components) is distributed under the [European Union Public Licence (EUPL) v1.1](https://joinup.ec.europa.eu/community/eupl/og_page/european-union-public-licence-eupl-v11).
+
+Documentation is licensed under [Creative Commons BY-NC-SA 3.0](http://creativecommons.org/licenses/by-nc-sa/3.0/).

@@ -1,80 +1,180 @@
 ---
 title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+description: "Create a working Java enterprise application with a full CRUD interface using UDA in under 5 minutes."
 ---
 
-## Get started in three steps
+This guide walks you through creating a new UDA project from scratch, generating a CRUD entity, and running the application. By the end, you will have a running web application with a fully functional maintenance interface.
 
-Get your documentation site running locally and make your first customization.
+<Info>
+  This guide assumes you have completed the [installation](/installation) and have Eclipse open with the UDA plugin active.
+</Info>
 
-### Step 1: Set up your local environment
+<Steps>
+  <Step title="Open Eclipse with the UDA plugin">
+    Launch Eclipse using the UDA bundle or your manually configured Eclipse instance. Confirm the UDA plugin is active by going to **Help > About Eclipse IDE > Installation Details** and verifying the UDA entry is present.
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+    You should also see **UDA** entries in the **File > New > Other** wizard list. If they are missing, check the Eclipse error log under **Window > Show View > Error Log** and re-verify the [installation steps](/installation).
+  </Step>
 
-### Step 2: Deploy your changes
+  <Step title="Create a new UDA project">
+    1. Go to **File > New > Other** and expand the **UDA** category.
+    2. Select **UDA Project** and click **Next**.
+    3. Fill in the project details in the wizard:
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+    | Field | Example value | Description |
+    |-------|---------------|-------------|
+    | **Group ID** | `com.example` | Maven group identifier for your organization |
+    | **Artifact ID** | `myapp` | Maven artifact name; also used as the base project name |
+    | **Package name** | `com.example.myapp` | Root Java package for generated source files |
+    | **Version** | `1.0.0-SNAPSHOT` | Initial project version |
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+    4. Click **Finish**. The wizard generates the full project structure.
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+    <Note>
+      The wizard may take a minute on first run — it downloads Maven dependencies and sets up the project modules.
+    </Note>
+  </Step>
 
-### Step 3: Go live
+  <Step title="Understand the generated project structure">
+    UDA generates a multi-module Maven project following a standard enterprise architecture. The top-level structure looks like this:
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+    <Tree>
+      <Tree.Folder name="myapp" defaultOpen>
+        <Tree.Folder name="myappEar" defaultOpen>
+          <Tree.File name="pom.xml" />
+        </Tree.Folder>
+        <Tree.Folder name="myappEjb" defaultOpen>
+          <Tree.File name="pom.xml" />
+          <Tree.Folder name="src/main/java">
+            <Tree.File name="(services, DAOs, entities)" />
+          </Tree.Folder>
+        </Tree.Folder>
+        <Tree.Folder name="myappWar" defaultOpen>
+          <Tree.File name="pom.xml" />
+          <Tree.Folder name="src/main/java">
+            <Tree.File name="(controllers, DTOs)" />
+          </Tree.Folder>
+          <Tree.Folder name="src/main/webapp">
+            <Tree.File name="(JSP views, RUP components, static assets)" />
+          </Tree.Folder>
+        </Tree.Folder>
+        <Tree.File name="pom.xml" />
+      </Tree.Folder>
+    </Tree>
+
+    Each module has a distinct responsibility:
+
+    - **EAR module** — Packages the application for deployment to a Java EE application server. Contains the assembly descriptor.
+    - **EJB module** — Holds the business layer: entities, services, DAOs, and Spring configuration for persistence and transactions.
+    - **WAR module** — Holds the web layer: Spring MVC controllers, DTOs, JSP views, and the RUP frontend components.
+
+    <Note>
+      Spring MVC is configured automatically. The `applicationContext.xml` files in the EJB and WAR modules wire the component-scan, transaction management, data source, and view resolver.
+    </Note>
+  </Step>
+
+  <Step title="Generate a CRUD entity with the Maintenance Assistant">
+    UDA's Maintenance Assistant wizard generates a complete CRUD interface — controller, service, DAO, entity, DTO, and JSP views — for any domain entity.
+
+    1. Right-click the **EJB module** in the Project Explorer and select **New > Other > UDA > Maintenance**.
+    2. In the wizard, provide the entity details:
+
+    | Field | Example value |
+    |-------|---------------|
+    | **Entity name** | `Usuario` |
+    | **Table name** | `T_USUARIO` |
+    | **Primary key field** | `id` (Long) |
+
+    3. Add fields using the field editor (for example: `nombre` as `String`, `email` as `String`, `activo` as `Boolean`).
+    4. Click **Finish**.
+
+    The wizard generates the following files across both modules:
+
+    - `UsuarioController.java` — Spring MVC controller in the WAR module
+    - `UsuarioService.java` / `UsuarioServiceImpl.java` — Service layer in the EJB module
+    - `UsuarioDao.java` / `UsuarioDaoImpl.java` — Data access layer in the EJB module
+    - `Usuario.java` — JPA entity in the EJB module
+    - `UsuarioDto.java` — Data transfer object in the WAR module
+    - `usuario.jsp` — Main JSP view with the RUP data table
+    - `usuarioForm.jsp` — Maintenance form JSP view
+  </Step>
+
+  <Step title="Review the generated controller">
+    Open `UsuarioController.java` in the WAR module. The generated controller follows the standard UDA pattern — extending `BaseController` and using Spring MVC annotations:
+
+    ```java
+    @Controller
+    @RequestMapping("/usuario")
+    public class UsuarioController extends BaseController {
+        
+        @Autowired
+        private UsuarioService usuarioService;
+        
+        @RequestMapping(method = RequestMethod.GET)
+        public String index(Model model) {
+            return "usuario/usuario";
+        }
+        
+        @RequestMapping(value = "/search", method = RequestMethod.GET)
+        @ResponseBody
+        public DataTablesOutput<UsuarioDto> search(
+                @Valid DataTablesInput input, BindingResult bindingResult) {
+            return usuarioService.findAll(input);
+        }
+    }
+    ```
+
+    Key points about the generated code:
+
+    - `BaseController` (from `x38ShLibClasses`) provides common exception handling, logging, and utility methods.
+    - The `index` method returns the view path — `usuario/usuario` maps to `WEB-INF/views/usuario/usuario.jsp`.
+    - The `search` method powers the RUP data table with server-side pagination and filtering via `DataTablesInput`.
+    - Additional CRUD endpoints (`add`, `update`, `delete`) are generated in the full controller — this is an excerpt.
+  </Step>
+
+  <Step title="Deploy to a server and verify">
+    1. In Eclipse, open the **Servers** view (**Window > Show View > Servers**). If no server is configured, add one (for example, Apache Tomcat or WildFly) using **New > Server**.
+    2. Right-click the server and select **Add and Remove**. Move your application's EAR or WAR to the **Configured** column and click **Finish**.
+    3. Start the server by right-clicking it and selecting **Start**.
+    4. Once the server is running, open a browser and navigate to:
+
+    ```
+    http://localhost:8080/myappWar/usuario
+    ```
+
+    You should see the generated `Usuario` maintenance interface — a data table with search, add, edit, and delete actions, all powered by the RUP components.
+
+    <Check>
+      If the page loads with the data table and toolbar, your UDA setup is working correctly.
+    </Check>
+
+    <Warning>
+      If you see a blank page or a 404, check that the WAR was deployed correctly and that the Spring MVC dispatcher servlet is mapped to `/` in `web.xml`. Check the server console for any startup errors.
+    </Warning>
+  </Step>
+</Steps>
+
+## See it in action
+
+A live demo application built with UDA is available at:
+
+[https://apps.ejie.eus/x21aAppWar/](https://apps.ejie.eus/x21aAppWar/)
+
+This demo shows the full range of UDA patterns — maintenance forms, master-detail views, search tables, and RUP components — in a real deployed application.
 
 ## Next steps
 
-Now that you have your docs running, explore these key features:
-
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="Architecture overview" icon="layer-group" href="/architecture/overview">
+    Learn how UDA's layered architecture is structured and how components interact.
+  </Card>
+  <Card title="UI patterns" icon="desktop" href="/components/ui-patterns">
+    Explore available web usability patterns: master-detail, wizard, search table, and more.
+  </Card>
+  <Card title="RUP components" icon="puzzle-piece" href="/components/rup-components">
+    Browse the full catalog of Rich UI Pattern components available for your views.
+  </Card>
+  <Card title="Code generation" icon="wand-magic-sparkles" href="/guides/code-generation">
+    Learn how to use the Eclipse wizards to generate controllers, services, DAOs, and views.
+  </Card>
 </CardGroup>
-
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>

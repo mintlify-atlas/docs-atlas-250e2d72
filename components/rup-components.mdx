@@ -1,0 +1,746 @@
+---
+title: "RUP components reference"
+description: "Complete reference for all udaRUP jQuery plugins: initialization patterns, configuration options, and usage examples for every Rich UI Pattern component."
+keywords: ["RUP", "udaRUP", "jQuery", "rup_table", "rup_form", "rup_select", "rup_date", "rup_dialog", "DataTables", "Select2"]
+---
+
+RUP (Rich UI Patterns) components are jQuery plugins distributed as part of `udaRUP`. Each plugin follows the convention `$.fn.rup_<name>` and accepts a single configuration object.
+
+<Note>
+  Download the complete RUP bundle (JavaScript, CSS, and images) from [udaRUP v6.4.0 on GitHub Releases](https://github.com/UDA-EJIE/udaRUP/releases/tag/v6.4.0). Include `rup.min.js` and `rup.min.css` in your page before initializing any component.
+</Note>
+
+## Including RUP in a page
+
+```html
+<!-- jQuery (required) -->
+<script src="vendor/jquery/jquery.min.js"></script>
+
+<!-- jQuery UI (required for date, dialog, tabs, accordion, autocomplete) -->
+<link rel="stylesheet" href="vendor/jquery-ui/jquery-ui.min.css" />
+<script src="vendor/jquery-ui/jquery-ui.min.js"></script>
+
+<!-- RUP bundle -->
+<link rel="stylesheet" href="rup/css/rup.min.css" />
+<script src="rup/js/rup.min.js"></script>
+```
+
+---
+
+## Components
+
+<AccordionGroup>
+
+  <Accordion title="rup_table — Data table">
+
+`rup_table` renders a paginated, sortable, and filterable data table. It is built on [DataTables](https://datatables.net/) and integrates with the UDA search endpoint convention.
+
+**Screenshot**
+
+![rup_table data table with pagination and column sorting](/images/imgwikis/grid2.0.png)
+
+**Basic initialization**
+
+```javascript
+$("#myTable").rup_table({
+    url: "/api/entity/search",
+    colModel: [
+        { label: "ID",          name: "id",          width: 50  },
+        { label: "Name",        name: "name",         width: 150 },
+        { label: "Description", name: "description",  width: 200 }
+    ],
+    rowNum: 10,
+    multiselect: true,
+    toolbar: {
+        formEdit: true,
+        tableButtons: true
+    }
+});
+```
+
+**Key configuration options**
+
+| Option | Type | Description |
+|---|---|---|
+| `url` | string | Base URL for the search endpoint (`GET {url}`) |
+| `colModel` | array | Column definitions: `label`, `name`, `width`, `sortable`, `hidden` |
+| `rowNum` | number | Number of rows per page (default: `10`) |
+| `multiselect` | boolean | Enable checkbox-based multi-row selection |
+| `toolbar` | object | Enable the integrated CRUD toolbar |
+| `filterForm` | string | Selector for an external filter form |
+| `loadOnStartup` | boolean | Load data immediately on init (default: `true`) |
+| `showRowDetails` | boolean | Show a detail panel when a row is selected |
+
+**Column model options**
+
+```javascript
+{
+    label: "Status",       // Column header text
+    name: "status",        // Field name in the JSON response
+    width: 80,
+    sortable: true,        // Allow column sorting (default: true)
+    hidden: false,         // Hide column initially
+    formatter: "select",   // Built-in cell formatter
+    edittype: "select",    // Edit widget type for inline editing
+    editoptions: {
+        value: "A:Active;I:Inactive"
+    }
+}
+```
+
+**Multi-selection**
+
+![rup_table with multi-row selection checkboxes](/images/imgwikis/tabla-multiseleccion.png)
+
+```javascript
+$("#myTable").rup_table({
+    url: "/api/items/search",
+    colModel: [ /* ... */ ],
+    multiselect: true,
+    onSelectRow: function(rowId, status) {
+        console.log("Row", rowId, "selected:", status);
+    }
+});
+```
+
+  </Accordion>
+
+  <Accordion title="rup_form — Form with Ajax submit">
+
+`rup_form` handles form serialization, Ajax submission, server-side validation error display, and feedback messaging. It integrates with the UDA controller conventions for CRUD operations.
+
+**Screenshot**
+
+![rup_form with validation error messages](/images/imgwikis/validacion2.0.png)
+
+**Basic initialization**
+
+```javascript
+$("#myForm").rup_form({
+    ajaxSubmit: true,
+    submitHandler: function(form) {
+        $(form).rup_form("submit");
+    },
+    success: function(data) {
+        // Handle success response
+    },
+    error: function(xhr) {
+        // Errors are auto-displayed by rup_feedback
+    }
+});
+```
+
+**Key configuration options**
+
+| Option | Type | Description |
+|---|---|---|
+| `ajaxSubmit` | boolean | Submit form via Ajax instead of page reload |
+| `submitHandler` | function | Called when form passes validation |
+| `success` | function | Callback on successful server response |
+| `error` | function | Callback on server error |
+| `validate` | object | jQuery Validate plugin options passed through |
+| `feedback` | string | Selector for the `rup_feedback` element to display messages |
+| `resetOnSuccess` | boolean | Reset form fields after a successful submit |
+
+**Wiring a form to a table**
+
+```javascript
+// The form submit updates the table automatically
+$("#entityForm").rup_form({
+    ajaxSubmit: true,
+    linkedTable: "#entityTable",
+    success: function() {
+        $("#entityTable").rup_table("reload");
+    }
+});
+```
+
+  </Accordion>
+
+  <Accordion title="rup_select and rup_combo — Dropdowns">
+
+`rup_select` provides a single or multi-value select control backed by a remote Ajax source or a static list. `rup_combo` extends this with cascading (parent–child) behaviour.
+
+**Screenshots**
+
+![rup_select single-value dropdown](/images/imgwikis/combos.png)
+
+![rup_select multi-value dropdown](/images/imgwikis/multi-combo.png)
+
+**Basic initialization — static source**
+
+```javascript
+$("#countrySelect").rup_select({
+    source: [
+        { value: "ES", label: "Spain"   },
+        { value: "FR", label: "France"  },
+        { value: "DE", label: "Germany" }
+    ]
+});
+```
+
+**Remote source**
+
+```javascript
+$("#categorySelect").rup_select({
+    url: "/api/categories",
+    sourceParam: { labelParam: "description", valueParam: "id" }
+});
+```
+
+**Cascading combo**
+
+```javascript
+// Province depends on the selected country
+$("#provinceCombo").rup_combo({
+    url: "/api/provinces",
+    parent: "#countrySelect",
+    parentParam: "countryId"
+});
+```
+
+**Key configuration options**
+
+| Option | Type | Description |
+|---|---|---|
+| `source` | array | Static list of `{ value, label }` objects |
+| `url` | string | Remote URL returning a JSON array |
+| `sourceParam` | object | Map remote field names to `value`/`label` |
+| `multiselect` | boolean | Allow selecting multiple values |
+| `parent` | string | Selector of the parent `rup_select` (combo only) |
+| `parentParam` | string | Query-string parameter name sent to `url` (combo only) |
+| `blank` | string | Label for the empty/placeholder option |
+
+  </Accordion>
+
+  <Accordion title="rup_autocomplete — Typeahead input">
+
+`rup_autocomplete` wraps jQuery UI Autocomplete with UDA's Ajax conventions to provide a typeahead text input that fetches suggestions from a remote endpoint.
+
+**Screenshot**
+
+![rup_autocomplete typeahead input with dropdown suggestions](/images/imgwikis/autocompletar.png)
+
+**Basic initialization**
+
+```javascript
+$("#nameInput").rup_autocomplete({
+    source: "/api/persons/suggest",
+    minLength: 2,
+    delay: 300,
+    select: function(event, ui) {
+        // ui.item.value and ui.item.label
+    }
+});
+```
+
+**Key configuration options**
+
+| Option | Type | Description |
+|---|---|---|
+| `source` | string \| array \| function | Remote URL, static array, or custom function |
+| `minLength` | number | Minimum characters before suggestions appear (default: `1`) |
+| `delay` | number | Debounce delay in milliseconds (default: `300`) |
+| `select` | function | Called when the user selects a suggestion |
+| `sourceParam` | object | Maps JSON response fields to `value`/`label` |
+| `multiselect` | boolean | Allow selecting multiple values into the input |
+
+**Remote source with field mapping**
+
+```javascript
+$("#productInput").rup_autocomplete({
+    source: "/api/products/search",
+    sourceParam: {
+        labelParam: "productName",
+        valueParam: "productCode"
+    },
+    minLength: 3
+});
+```
+
+  </Accordion>
+
+  <Accordion title="rup_date — Date and time pickers">
+
+`rup_date` wraps jQuery UI Datepicker to provide single date, date range, and time pickers with locale-aware formatting.
+
+**Screenshots**
+
+![rup_date single date picker calendar](/images/imgwikis/fechas.png)
+
+![rup_date date range picker](/images/imgwikis/intervalos-fechas.png)
+
+![rup_date time picker](/images/imgwikis/horas.png)
+
+![rup_date multiple date selection](/images/imgwikis/fechas-multiples.png)
+
+**Single date picker**
+
+```javascript
+$("#birthDate").rup_date({
+    dateFormat: "dd/mm/yy",
+    showButtonPanel: true,
+    changeMonth: true,
+    changeYear: true
+});
+```
+
+**Date range (from/to)**
+
+```javascript
+$("#dateFrom").rup_date({
+    dateFormat: "dd/mm/yy",
+    to: "#dateTo"           // Link to the "to" input
+});
+
+$("#dateTo").rup_date({
+    dateFormat: "dd/mm/yy",
+    from: "#dateFrom"       // Link to the "from" input
+});
+```
+
+**Time picker**
+
+```javascript
+$("#appointmentTime").rup_date({
+    showTimepicker: true,
+    timeFormat: "HH:mm",
+    dateFormat: "dd/mm/yy"
+});
+```
+
+**Key configuration options**
+
+| Option | Type | Description |
+|---|---|---|
+| `dateFormat` | string | Display format, e.g. `"dd/mm/yy"` |
+| `showTimepicker` | boolean | Add a time selector panel |
+| `timeFormat` | string | Time format, e.g. `"HH:mm"` |
+| `from` | string | Selector for the range start input |
+| `to` | string | Selector for the range end input |
+| `minDate` | Date \| string | Earliest selectable date |
+| `maxDate` | Date \| string | Latest selectable date |
+| `numberOfMonths` | number | How many months to display at once |
+
+  </Accordion>
+
+  <Accordion title="rup_menu — Navigation menus">
+
+`rup_menu` renders horizontal, vertical, or breadcrumb navigation menus, including context menus, from a JSON structure.
+
+**Screenshots**
+
+![rup_menu horizontal menu bar](/images/imgwikis/menus-h2.0.png)
+
+![rup_menu vertical side menu](/images/imgwikis/menus-v2.0.png)
+
+![rup_menu breadcrumb trail](/images/imgwikis/migas2.0.png)
+
+**Horizontal menu**
+
+```javascript
+$("#mainMenu").rup_menu({
+    type: "horizontal",
+    source: "/api/menu/items",
+    i18nId: "menu"
+});
+```
+
+**Breadcrumb**
+
+```javascript
+$("#breadcrumb").rup_menu({
+    type: "breadcrumb",
+    items: [
+        { label: "Home",     url: "/" },
+        { label: "Entities", url: "/entities" },
+        { label: "Detail",   url: null }   // Current page — no link
+    ]
+});
+```
+
+**Key configuration options**
+
+| Option | Type | Description |
+|---|---|---|
+| `type` | string | `"horizontal"`, `"vertical"`, or `"breadcrumb"` |
+| `source` | string | URL returning the menu JSON structure |
+| `items` | array | Static menu items array |
+| `i18nId` | string | i18n resource bundle key prefix |
+| `contextMenu` | boolean | Enable right-click context menu mode |
+
+  </Accordion>
+
+  <Accordion title="rup_tabs — Tab panel">
+
+`rup_tabs` creates a tabbed panel where each tab can load its content inline or via Ajax.
+
+**Screenshot**
+
+![rup_tabs tabbed panel](/images/imgwikis/pestanas.png)
+
+**Basic initialization**
+
+```javascript
+$("#tabPanel").rup_tabs({
+    tabs: [
+        { i18nCaption: "tab.general", layer: "tab-general" },
+        { i18nCaption: "tab.address", layer: "tab-address" },
+        { i18nCaption: "tab.history", url: "/entity/history-tab" }
+    ],
+    active: 0
+});
+```
+
+**Key configuration options**
+
+| Option | Type | Description |
+|---|---|---|
+| `tabs` | array | Tab definitions: `i18nCaption`, `layer` (inline), or `url` (Ajax) |
+| `active` | number | Index of the initially active tab (default: `0`) |
+| `collapsible` | boolean | Allow deactivating all tabs |
+| `disabled` | array | Indexes of disabled tabs |
+| `activate` | function | Callback when a tab becomes active |
+
+  </Accordion>
+
+  <Accordion title="rup_accordion — Collapsible panels">
+
+`rup_accordion` renders a set of collapsible content panels, at most one of which is open at a time.
+
+**Screenshot**
+
+![rup_accordion collapsible panel sections](/images/imgwikis/accordion2.0.png)
+
+**Basic initialization**
+
+```javascript
+$("#accordion").rup_accordion({
+    panels: [
+        { i18nCaption: "section.general", layer: "panel-general" },
+        { i18nCaption: "section.options",  layer: "panel-options"  }
+    ],
+    active: 0,
+    collapsible: true
+});
+```
+
+**Key configuration options**
+
+| Option | Type | Description |
+|---|---|---|
+| `panels` | array | Panel definitions: `i18nCaption` and `layer` (element ID) |
+| `active` | number \| boolean | Index of open panel, or `false` to collapse all |
+| `collapsible` | boolean | Allow closing the open panel |
+| `heightStyle` | string | `"auto"`, `"fill"`, or `"content"` |
+| `activate` | function | Callback when a panel opens |
+
+  </Accordion>
+
+  <Accordion title="rup_dialog — Modal dialog">
+
+`rup_dialog` creates an accessible modal dialog, optionally loading its content from a remote URL.
+
+**Screenshot**
+
+![rup_dialog modal dialog window](/images/imgwikis/mensaje-dialogo.png)
+
+**Basic initialization**
+
+```javascript
+// Inline content dialog
+$("#confirmDialog").rup_dialog({
+    type: "confirmation",
+    title:   "Confirm deletion",
+    message: "Are you sure you want to delete this record?",
+    buttons: {
+        "Confirm": function() {
+            // perform deletion
+            $(this).rup_dialog("close");
+        },
+        "Cancel": function() {
+            $(this).rup_dialog("close");
+        }
+    }
+});
+```
+
+**Ajax content dialog**
+
+```javascript
+$("#detailDialog").rup_dialog({
+    type: "ajax",
+    url: "/entity/detail-fragment",
+    title: "Record detail",
+    width: 700,
+    modal: true
+});
+```
+
+**Key configuration options**
+
+| Option | Type | Description |
+|---|---|---|
+| `type` | string | `"confirmation"`, `"ajax"`, or `"inline"` |
+| `title` | string | Dialog title bar text |
+| `message` | string | Body text (for `confirmation` dialogs) |
+| `url` | string | Remote URL for Ajax content |
+| `width` | number | Dialog width in pixels |
+| `modal` | boolean | Block background interaction (default: `true`) |
+| `buttons` | object | Map of button label → click handler |
+| `close` | function | Callback when dialog is closed |
+
+  </Accordion>
+
+  <Accordion title="rup_feedback — Status messages">
+
+`rup_feedback` displays status messages (success, error, processing) in a standardized banner that is automatically wired to `rup_form` and `rup_table` responses.
+
+**Screenshots**
+
+![rup_feedback success message](/images/imgwikis/feedbackok2.0.png)
+
+![rup_feedback error message](/images/imgwikis/feedbackerror2.0.png)
+
+![rup_feedback processing message](/images/imgwikis/feedbackprocesando2.0.png)
+
+**Basic initialization**
+
+```javascript
+$("#feedback").rup_feedback({
+    type: "ok",
+    message: "Record saved successfully.",
+    delay: 5000,       // Auto-dismiss after 5 seconds (0 = sticky)
+    block: false       // Do not block the UI
+});
+```
+
+**Programmatic use**
+
+```javascript
+// Show a success message
+$("#feedback").rup_feedback("set", "ok", "Changes saved.");
+
+// Show an error
+$("#feedback").rup_feedback("set", "error", "An error occurred.");
+
+// Show processing state (spinner)
+$("#feedback").rup_feedback("set", "processing", "Saving…");
+
+// Clear
+$("#feedback").rup_feedback("close");
+```
+
+**Key configuration options**
+
+| Option | Type | Description |
+|---|---|---|
+| `type` | string | `"ok"`, `"error"`, `"alert"`, or `"processing"` |
+| `message` | string | Message text (supports HTML) |
+| `delay` | number | Auto-dismiss delay in ms; `0` keeps it visible |
+| `block` | boolean | Display a full-page blocking overlay |
+| `imgPath` | string | Path to spinner image for processing state |
+
+  </Accordion>
+
+  <Accordion title="rup_toolbar — CRUD button toolbar">
+
+`rup_toolbar` renders a standardized button bar with CRUD action buttons (New, Edit, Save, Delete, etc.) and wires them to an associated `rup_table`.
+
+**Screenshot**
+
+![rup_toolbar CRUD button toolbar](/images/imgwikis/botonera2.0.png)
+
+**Basic initialization**
+
+```javascript
+$("#toolbar").rup_toolbar({
+    id: "toolbar",
+    model: "entity",
+    buttons: [
+        {
+            id: "new",
+            i18nCaption: "toolbar.new",
+            icon: "add",
+            click: function() {
+                // Open create form
+            }
+        },
+        {
+            id: "edit",
+            i18nCaption: "toolbar.edit",
+            icon: "edit",
+            click: function() {
+                var selected = $("#entityTable").rup_table("getSelectedRows");
+                // Open edit form with selected row
+            }
+        },
+        {
+            id: "delete",
+            i18nCaption: "toolbar.delete",
+            icon: "delete",
+            click: function() {
+                // Delete selected rows
+            }
+        }
+    ]
+});
+```
+
+**Key configuration options**
+
+| Option | Type | Description |
+|---|---|---|
+| `id` | string | Unique toolbar identifier |
+| `model` | string | Entity model name (used for i18n keys) |
+| `buttons` | array | Button definitions (see below) |
+| `disabled` | array | IDs of initially disabled buttons |
+
+**Button definition**
+
+```javascript
+{
+    id:           "save",        // Unique button ID
+    i18nCaption:  "toolbar.save", // i18n key for the label
+    icon:         "save",        // Icon name from the UDA icon set
+    css:          "btn-primary", // Additional CSS class
+    disabled:     false,         // Initially disabled?
+    click:        function() {}  // Click handler
+}
+```
+
+  </Accordion>
+
+  <Accordion title="rup_upload — File upload">
+
+`rup_upload` provides a file upload widget with progress indication, file-type validation, and multi-file support.
+
+**Screenshot**
+
+![rup_upload file upload widget with progress bar](/images/imgwikis/upload2.0.png)
+
+**Basic initialization**
+
+```javascript
+$("#fileUpload").rup_upload({
+    url: "/api/files/upload",
+    acceptFileTypes: /(\.|\/)(pdf|docx?|xlsx?)$/i,
+    maxFileSize: 5242880,   // 5 MB in bytes
+    maxNumberOfFiles: 5,
+    autoUpload: false,
+    done: function(e, data) {
+        console.log("Uploaded:", data.result);
+    }
+});
+```
+
+**Key configuration options**
+
+| Option | Type | Description |
+|---|---|---|
+| `url` | string | Upload endpoint URL |
+| `acceptFileTypes` | RegExp | Allowed MIME types / extensions |
+| `maxFileSize` | number | Maximum file size in bytes |
+| `maxNumberOfFiles` | number | Maximum number of files in one upload |
+| `autoUpload` | boolean | Upload immediately on file selection |
+| `multipart` | boolean | Send as `multipart/form-data` (default: `true`) |
+| `done` | function | Callback on successful upload |
+| `fail` | function | Callback on upload error |
+| `progress` | function | Progress event callback |
+
+  </Accordion>
+
+  <Accordion title="rup_wizard — Multi-step form wizard">
+
+`rup_wizard` guides the user through a multi-step process, validating each step before advancing.
+
+**Screenshot**
+
+![rup_wizard multi-step form with step indicators](/images/imgwikis/wizard2.0.png)
+
+**Basic initialization**
+
+```javascript
+$("#registrationWizard").rup_wizard({
+    steps: [
+        {
+            title: "Personal data",
+            layer: "step-personal",
+            validate: function() {
+                return $("#step-personal").valid();
+            }
+        },
+        {
+            title: "Contact details",
+            layer: "step-contact",
+            validate: function() {
+                return $("#step-contact").valid();
+            }
+        },
+        {
+            title: "Confirmation",
+            layer: "step-confirm"
+        }
+    ],
+    finish: function() {
+        $("#wizardForm").rup_form("submit");
+    }
+});
+```
+
+**Key configuration options**
+
+| Option | Type | Description |
+|---|---|---|
+| `steps` | array | Step definitions: `title`, `layer`, optional `validate` |
+| `finish` | function | Called when the user clicks the final "Finish" button |
+| `cancel` | function | Called when the user cancels the wizard |
+| `enableAllSteps` | boolean | Allow navigating to any step without sequential validation |
+| `showStepLinks` | boolean | Show numbered step indicators at the top |
+
+  </Accordion>
+
+</AccordionGroup>
+
+---
+
+## Common patterns
+
+### Wiring a toolbar to a table
+
+```javascript
+// Table
+$("#entityTable").rup_table({
+    url: "/api/entities/search",
+    colModel: [ /* ... */ ],
+    toolbar: { formEdit: true }
+});
+
+// Toolbar buttons automatically enable/disable based on table selection
+$("#toolbar").rup_toolbar({
+    model: "entity",
+    buttons: [
+        { id: "new",    /* ... */ },
+        { id: "edit",   /* ... */ },
+        { id: "delete", /* ... */ }
+    ]
+});
+```
+
+### Showing feedback after a form save
+
+```javascript
+$("#entityForm").rup_form({
+    ajaxSubmit: true,
+    success: function() {
+        $("#mainFeedback").rup_feedback("set", "ok", "Record saved successfully.");
+        $("#entityTable").rup_table("reload");
+    },
+    error: function(xhr) {
+        var msg = xhr.responseJSON && xhr.responseJSON.message
+                    ? xhr.responseJSON.message
+                    : "An unexpected error occurred.";
+        $("#mainFeedback").rup_feedback("set", "error", msg);
+    }
+});
+```

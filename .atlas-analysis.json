@@ -1,23 +1,11 @@
 {
-  "$schema": "https://mintlify.com/docs.json",
-  "name": "UDA - Utilidades de Desarrollo de Aplicaciones",
+  "projectType": "framework",
+  "projectName": "UDA - Utilidades de Desarrollo de Aplicaciones",
+  "projectDescription": "UDA is a comprehensive set of utilities, tools, libraries, plugins, and recommendations that accelerates Java enterprise application development with automatic code generation and web UI components.",
   "theme": "palm",
-  "colors": {
-    "primary": "#2879d0",
-    "light": "#9ddcff",
-    "dark": "#2c5aa0"
-  },
-  "navbar": {
-    "primary": {
-      "type": "github",
-      "href": "https://github.com/UDA-EJIE/uda-ejie.github.io"
-    }
-  },
-  "footer": {
-    "socials": {
-      "github": "https://github.com/UDA-EJIE/uda-ejie.github.io"
-    }
-  },
+  "primaryColor": "#2879d0",
+  "lightColor": "#9ddcff",
+  "darkColor": "#2c5aa0",
   "navigation": {
     "tabs": [
       {
@@ -80,5 +68,25 @@
         ]
       }
     ]
-  }
+  },
+  "keyFeatures": [
+    "Automatic CRUD interface generation",
+    "Layered MVC code generation via Eclipse plugin",
+    "RUP (Rich UI Patterns) web component library",
+    "WCAG 2.0 and WAI-ARIA accessibility compliance",
+    "Modular and extensible architecture",
+    "Support for multiple UDA versions (4.x, 5.x, 6.x) simultaneously",
+    "Maven-based project structure with Spring MVC",
+    "Minimal learning curve by building on established frameworks"
+  ],
+  "publicApiSurface": [
+    "udaPlugin - Eclipse plugin for code generation",
+    "udaTemplates - Project and code templates",
+    "udaRUP - RUP JavaScript/CSS UI components",
+    "udaLib (x38ShLibClasses) - Java shared libraries",
+    "udaHdiv - HDIV security integration",
+    "BaseController - Spring MVC base controller class",
+    "CRUD maintenance pattern (mantenimiento-formulario)",
+    "Master-detail pattern (mantenimiento-maestro-detalle)"
+  ]
 }

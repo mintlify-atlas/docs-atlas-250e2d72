@@ -1,0 +1,113 @@
+---
+title: 'Release process'
+description: 'How UDA releases are structured, what artifacts are published, and where to download them.'
+---
+
+A UDA release is a coordinated effort across multiple repositories. Each component is versioned and released independently, but all components within a major series share the same version number (e.g., all 6.4.0 artifacts are released together).
+
+## Release structure
+
+Each release involves the following repositories, each publishing its own artifact:
+
+| Repository | Artifact type | Distribution |
+|------------|--------------|--------------|
+| udaPlugin | Eclipse update site (zip) | GitHub Releases |
+| udaTemplates | Template archive (templates-vX.Y.Z.zip) | GitHub Releases + Google Drive |
+| udaRUP | RUP bundle (rup-vX.Y.Z.zip) with minified JS + CSS | GitHub Releases + Google Drive |
+| udaLib | Maven artifact (JAR + POM) | GitHub Releases |
+| udaHdiv | Maven artifact (JAR + POM) | GitHub Releases |
+
+---
+
+## Release checklist
+
+<Steps>
+  <Step title="Update version numbers">
+    Bump version numbers consistently across all affected repositories. For a coordinated release, all components should share the same version string (e.g., `6.4.0`).
+  </Step>
+  <Step title="Update changelogs and wiki">
+    Document what changed in the [UDA wiki version history](https://github.com/UDA-EJIE/uda-ejie.github.io/wiki/Versiones-6.x.x). Include notable changes, bug fixes, and migration notes.
+  </Step>
+  <Step title="Run tests">
+    Execute the test suite for each component before tagging:
+    - udaRUP: `grunt test`
+    - udaLib: `mvn test`
+    - Smoke-test the Eclipse plugin against the target Eclipse version.
+  </Step>
+  <Step title="Build release artifacts">
+    Produce the distributable artifacts:
+
+    ```bash
+    # udaRUP
+    grunt build
+    # Produces dist/rup-vX.Y.Z.zip
+
+    # udaTemplates
+    mvn package
+    # Produces target/templates-vX.Y.Z.zip
+
+    # udaLib
+    mvn clean package
+    # Produces target/x38ShLibClasses-vX.Y.Z-RELEASE.jar
+    ```
+  </Step>
+  <Step title="Create Git tags">
+    Tag the release commit in each repository using the `v` prefix:
+    ```bash
+    git tag v6.4.0
+    git push origin v6.4.0
+    ```
+  </Step>
+  <Step title="Publish to GitHub Releases">
+    Create a GitHub Release from the tag in each repository and attach the built artifacts as release assets.
+  </Step>
+  <Step title="Upload to Google Drive">
+    Copy the release archives to the appropriate Google Drive version folder so that users can access all artifacts in one place:
+    - v6.x: [Google Drive folder](https://drive.google.com/drive/folders/1HpefoKbCBW3ymCfb5BevpcIeEJyzIVEz)
+    - v5.x: [Google Drive folder](https://drive.google.com/drive/folders/1GVDxDsi8dkbxrfP35XC5BHJYk_QMFsrJ)
+    - v4.x: [Google Drive folder](https://drive.google.com/drive/folders/1lGMFN6CiVUOvlN4Vvfq6c6bDPPAjktXF)
+  </Step>
+  <Step title="Update the website">
+    Update the download links on the [uda-ejie.github.io](https://github.com/UDA-EJIE/uda-ejie.github.io) website to point to the new release.
+  </Step>
+</Steps>
+
+---
+
+## Artifact types
+
+### Eclipse update site (udaPlugin)
+
+The Eclipse plugin is distributed as an installable update site zip. Users add it to Eclipse via **Help → Install New Software → Add → Archive**.
+
+### Template archive (udaTemplates)
+
+A zip file containing Maven archetype descriptors and project templates. The Eclipse plugin references these to scaffold new UDA applications.
+
+### RUP bundle (udaRUP)
+
+A zip file containing the minified JavaScript and CSS files for all RUP UI components. Applications include these static assets directly.
+
+### Maven artifacts (udaLib, udaHdiv)
+
+JAR files with accompanying POM descriptors, published as GitHub Release assets. Projects declare a dependency in their `pom.xml` and reference the artifact from a local repository or a configured Maven repository.
+
+---
+
+## Support lifecycle
+
+<CardGroup cols={3}>
+  <Card title="Current" icon="circle-check">
+    Actively developed. Receives new features, bug fixes, and security updates. New projects should always use the current series.
+  </Card>
+  <Card title="Maintenance" icon="wrench">
+    Security fixes only. No new features will be added. Existing applications can remain on this series but should plan to upgrade.
+  </Card>
+  <Card title="Legacy" icon="archive">
+    No support. No bug fixes, security patches, or updates of any kind. Upgrade as soon as possible.
+  </Card>
+</CardGroup>
+
+<Info>
+  The current support status of each release series is shown on the [versions and downloads](/reference/versions) page.
+</Info>
